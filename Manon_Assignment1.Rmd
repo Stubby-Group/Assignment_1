@@ -35,8 +35,112 @@ Questions:
 - Then implement a quadratic approximation (hint check paragraph 2.4.2!).
 - N.B. for the rest of the exercise just keep using the grid approximation (we'll move to quadratic approximations in two classes)
 
+```{r Question 1}
+# loading stuff
+library(tidyverse)
+library(rethinking)
+
+df <- tibble(correct = c(3, 2, 160, 66),
+             ID = c("R", "K", "D", "M"),
+             total = c(6, 2, 198, 132))
+
+# Riccardo's estimated knowledge of CogSci
+dens <- 100 #what is density? ideally high to approximate underlying distribution, but with 100s of parameters it will take too long to have a density of 10.000 (above 20, Ricardo saw it didn't really change results)
+R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = 1 #new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
+                 ) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == "R"], #also = 3
+                             size = df$total[df$ID == "R"], #also= 6
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         ) %>%
+  glimpse() # what does glimpse do?
+
+# draw the plot:
+d <- data.frame(grid = R_grid$p_grid, posterior = R_grid$posterior, prior = R_grid$prior, likelihood = R_grid$likelihood)
+
+ggplot(d, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle("Riccardo")
+```
+
+
 2. Estimate all the teachers' knowledge of CogSci. Who's best? Use grid approximation. Comment on the posteriors of Riccardo and Mikkel.
 2a. Produce plots of the prior, and posterior for each teacher.
+
+```{r Question 2}
+#Kristian
+K_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = 1) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == "K"], #also = 2
+                             size = df$total[df$ID == "K"], #also= 2
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)) %>%
+  glimpse()
+
+Kdf <- data.frame(grid = K_grid$p_grid, posterior = K_grid$posterior, prior = K_grid$prior, likelihood = K_grid$likelihood)
+
+ggplot(Kdf, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle("Kristian")
+
+
+
+#Daina
+D_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = 1) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == "D"], #also = 160
+                             size = df$total[df$ID == "D"], #also= 198
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)) %>%
+  glimpse()
+
+Ddf <- data.frame(grid = D_grid$p_grid, posterior = D_grid$posterior, prior = D_grid$prior, likelihood = D_grid$likelihood)
+
+ggplot(Ddf, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle("Daina")
+
+#Mikkel
+M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = 1) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == "M"], #also = 66
+                             size = df$total[df$ID == "M"], #also= 132
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)) %>%
+  glimpse()
+
+Mdf <- data.frame(grid = M_grid$p_grid, posterior = M_grid$posterior, prior = M_grid$prior, likelihood = M_grid$likelihood)
+
+ggplot(Mdf, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle("Mikkel")
+```
+
 
 3. Change the prior. Given your teachers have all CogSci jobs, you should start with a higher appreciation of their knowledge: the prior is a normal distribution with a mean of 0.8 and a standard deviation of 0.2. Do the results change (and if so how)?
 3a. Produce plots of the prior and posterior for each teacher.
