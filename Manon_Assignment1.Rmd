@@ -66,7 +66,8 @@ ggplot(d, aes(grid, posterior))+
   theme_classic()+
   geom_line(aes(grid, prior/dens),color= 'red')+
   xlab("Knowledge of CogSci")+
-  ylab("posterior probability")
+  ylab("posterior probability")+
+  ggtitle("Riccardo")
 ```
 
 
@@ -92,7 +93,8 @@ ggplot(Kdf, aes(grid, posterior))+
   theme_classic()+
   geom_line(aes(grid, prior/dens),color= 'red')+
   xlab("Knowledge of CogSci")+
-  ylab("posterior probability")
+  ylab("posterior probability")+
+  ggtitle("Kristian")
 
 
 
@@ -114,7 +116,8 @@ ggplot(Ddf, aes(grid, posterior))+
   theme_classic()+
   geom_line(aes(grid, prior/dens),color= 'red')+
   xlab("Knowledge of CogSci")+
-  ylab("posterior probability")
+  ylab("posterior probability")+
+  ggtitle("Daina")
 
 #Mikkel
 M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
@@ -134,7 +137,8 @@ ggplot(Mdf, aes(grid, posterior))+
   theme_classic()+
   geom_line(aes(grid, prior/dens),color= 'red')+
   xlab("Knowledge of CogSci")+
-  ylab("posterior probability")
+  ylab("posterior probability")+
+  ggtitle("Mikkel")
 ```
 
 
