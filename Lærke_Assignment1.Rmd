@@ -49,8 +49,8 @@ Questions:
 ```{r}
 # First implement a grid approximation (hint check paragraph 2.4.1!) with a uniform prior, calculate the posterior and plot the results:
 
-R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 100),
-                 prior = 1 #new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
+R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
+                 prior = 1 #(same as rep(1, 101)) new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
                  ) %>%
   mutate(likelihood = dbinom(df$correct[df$ID == "R"], size = df$total[df$ID == "R"], prob = p_grid),#We don't want to just manually write Rs values.
          unstd.posterior = likelihood * prior,
@@ -58,25 +58,11 @@ R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 100),
          ) %>%
   glimpse()
 
+# Plot
+plot(R_grid$p_grid, R_grid$posterior, type = "b",
+     xlab = "Probability of correct", ylab = "Posterior probability")
 
-
-
-##Define the grid:
-p_grid <- seq(from = 0, to = 1, length.out = 100)
-
-##Define prior
-prior <- rep(1, 20)
-
-## Compute likelihood at each value in the grid:
-likelihood <- dbinom(3, size = 6, prob = p_grid)
-
-## Compute product of likelihood and prior:
-unstd.posterior <- likelihood * prior
-
-## Standardize the posterior, so it sums to 1:
-posterior <- unstd.posterior / sum(unstd.posterior)
-
-
+# Likelihood = plausibility (in this case - generally-ish)
 
 ```
 
