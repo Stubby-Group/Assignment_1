@@ -35,6 +35,41 @@ Questions:
 - Then implement a quadratic approximation (hint check paragraph 2.4.2!).
 - N.B. for the rest of the exercise just keep using the grid approximation (we'll move to quadratic approximations in two classes)
 
+```{r Question 1}
+# loading stuff
+library(tidyverse)
+library(rethinking)
+
+df <- tibble(correct = c(3, 2, 160, 66),
+             ID = c("R", "K", "D", "M"),
+             total = c(6, 2, 198, 132))
+
+# Riccardo's estimated knowledge of CogSci
+dens <- 100 #what is density? ideally high to approximate underlying distribution, but with 100s of parameters it will take too long to have a density of 10.000 (above 20, Ricardo saw it didn't really change results)
+R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = 1 #new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
+                 ) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == "R"], #also = 3
+                             size = df$total[df$ID == "R"], #also= 6
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         ) %>%
+  glimpse() # what does glimpse do?
+
+# draw the plot:
+d <- data.frame(grid = R_grid$p_grid, posterior = R_grid$posterior, prior = R_grid$prior, likelihood = R_grid$likelihood)
+
+ggplot(d, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")
+```
+
+
 2. Estimate all the teachers' knowledge of CogSci. Who's best? Use grid approximation. Comment on the posteriors of Riccardo and Mikkel.
 2a. Produce plots of the prior, and posterior for each teacher.
 
