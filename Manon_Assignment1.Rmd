@@ -60,7 +60,7 @@ R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
 # draw the plot:
 d <- data.frame(grid = R_grid$p_grid, posterior = R_grid$posterior, prior = R_grid$prior, likelihood = R_grid$likelihood)
 
-ggplot(d, aes(grid, posterior))+
+RF <- ggplot(d, aes(grid, posterior))+
   geom_point()+
   geom_line()+
   theme_classic()+
@@ -69,6 +69,7 @@ ggplot(d, aes(grid, posterior))+
   ylab("posterior probability")+
   ggtitle("Riccardo")
 ```
+
 ```{r Question 1.2- implement a quadratic approximation (hint check paragraph 2.4.2!).}
 # chunk from R code 2.6 in SR (but modified)
 globe.qa <- quap(
@@ -99,7 +100,7 @@ K_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
 
 Kdf <- data.frame(grid = K_grid$p_grid, posterior = K_grid$posterior, prior = K_grid$prior, likelihood = K_grid$likelihood)
 
-ggplot(Kdf, aes(grid, posterior))+
+KT <- ggplot(Kdf, aes(grid, posterior))+
   geom_point()+
   geom_line()+
   theme_classic()+
@@ -122,7 +123,7 @@ D_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
 
 Ddf <- data.frame(grid = D_grid$p_grid, posterior = D_grid$posterior, prior = D_grid$prior, likelihood = D_grid$likelihood)
 
-ggplot(Ddf, aes(grid, posterior))+
+DC <- ggplot(Ddf, aes(grid, posterior))+
   geom_point()+
   geom_line()+
   theme_classic()+
@@ -143,7 +144,7 @@ M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
 
 Mdf <- data.frame(grid = M_grid$p_grid, posterior = M_grid$posterior, prior = M_grid$prior, likelihood = M_grid$likelihood)
 
-ggplot(Mdf, aes(grid, posterior))+
+MW <- ggplot(Mdf, aes(grid, posterior))+
   geom_point()+
   geom_line()+
   theme_classic()+
@@ -151,6 +152,20 @@ ggplot(Mdf, aes(grid, posterior))+
   xlab("Knowledge of CogSci")+
   ylab("posterior probability")+
   ggtitle("Mikkel")
+
+# Plotting all teachers in one plot
+# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
+ggpubr::ggarrange(RF, KT, DC, MW, 
+                  #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
+                  ncol = 2, nrow = 2)
+
+RF
+KT
+DC
+MW
+```
+```{r Question 2 but the right way}
+
 ```
 
 
