@@ -35,7 +35,7 @@ Questions:
 - Then implement a quadratic approximation (hint check paragraph 2.4.2!).
 - N.B. for the rest of the exercise just keep using the grid approximation (we'll move to quadratic approximations in two classes)
 
-```{r Question 1}
+```{r Question 1.1}
 # loading stuff
 library(tidyverse)
 library(rethinking)
@@ -68,6 +68,18 @@ ggplot(d, aes(grid, posterior))+
   xlab("Knowledge of CogSci")+
   ylab("posterior probability")+
   ggtitle("Riccardo")
+```
+```{r Question 1.2- implement a quadratic approximation (hint check paragraph 2.4.2!).}
+# chunk from R code 2.6 in SR (but modified)
+globe.qa <- quap(
+    alist(
+        correct ~ dbinom(correct+incorrect, p), # binomial likelihood
+        p ~ dunif(0,1)), # uniform prior
+        data=list(correct = df$correct[df$ID == "R"], incorrect = df$total[df$ID == "R"]-df$correct[df$ID == "R"])
+    )
+
+# display summary of quadratic approximation
+precis(globe.qa)
 ```
 
 
