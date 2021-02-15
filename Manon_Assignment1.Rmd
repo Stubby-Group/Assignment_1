@@ -58,7 +58,7 @@ R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
   glimpse() # what does glimpse do?
 
 # draw the plot:
-d <- data.frame(grid = R_grid$p_grid, posterior = R_grid$posterior, prior = R_grid$prior, likelihood = R_grid$likelihood)
+c
 
 RF <- ggplot(d, aes(grid, posterior))+
   geom_point()+
@@ -163,7 +163,10 @@ RF
 KT
 DC
 MW
+
+# Comment: Both Riccardo and Mikkel have most probibly a roughly fifty-fifty knowledge of cogsci
 ```
+
 ```{r Question 2 but the right way}
 
 ```
@@ -171,6 +174,36 @@ MW
 
 3. Change the prior. Given your teachers have all CogSci jobs, you should start with a higher appreciation of their knowledge: the prior is a normal distribution with a mean of 0.8 and a standard deviation of 0.2. Do the results change (and if so how)?
 3a. Produce plots of the prior and posterior for each teacher.
+
+```{r}
+customPrior <- function(priorMean, priorSD, teacherInitial, plotTitle){
+  dens <- 100
+  YAS_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = dnorm(x = 0, mean = priorMean, sd = priorSD)) %>%
+    mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
+                             size = df$total[df$ID == teacherInitial],
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         ) %>%
+    
+    d <- data.frame(grid = YAS_grid$p_grid, posterior = YAS_grid$posterior, prior = YAS_grid$prior, likelihood = YAS_grid$likelihood)
+  
+  PLOT <- ggplot(d, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle(plotTitle)
+  
+  return(PLOT)
+}
+
+customPrior(0.8, 0.2, "M", "Mikkel")
+```
+
 
 4. You go back to your teachers and collect more data (multiply the previous numbers by 100). Calculate their knowledge with both a uniform prior and a normal prior with a mean of 0.8 and a standard deviation of 0.2. Do you still see a difference between the results? Why?
 
