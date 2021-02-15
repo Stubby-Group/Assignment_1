@@ -51,17 +51,19 @@ Questions:
 
 
 ```{r}
-gridFunction <- function(plotTitle, prior_mean, prior_sd, correct, total){
+flatPrior <- function(plotTitle, teacherInitial){
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
-                 prior = dnorm(0, mean = prior_mean, sd = prior_sd, log = FALSE)
+                 prior = 1
                  ) %>%
-  mutate(likelihood = dbinom(correct, size = total, prob = p_grid),
+  mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
+                             size = df$total[df$ID == teacherInitial],
+                             prob = p_grid),
          unstd.posterior = likelihood * prior,
          posterior = unstd.posterior / sum(unstd.posterior)
          )
   #Plot:
   df <- data.frame(grid = P_grid$p_grid, posterior = P_grid$posterior, prior = P_grid$prior, likelihood = P_grid$likelihood)
-  PW <- ggplot(df, aes(grid, posterior))+
+  PLOT <- ggplot(df, aes(grid, posterior))+
     geom_point()+
     geom_line()+
     theme_classic()+
@@ -69,12 +71,35 @@ gridFunction <- function(plotTitle, prior_mean, prior_sd, correct, total){
     xlab("Knowledge of CogSci")+
     ylab("posterior probability")+
     ggtitle(plotTitle)
-  return(P_grid)
-  return(PW)
+  # return(P_grid)
+  return(PLOT)
   }
 
 
-gridFunction("Riccardo", 0.8, 0.2, 3, 6)
+customPrior <- function(plotTitle, prior_mean, prior_sd, teacherInitial){
+  P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
+                 prior = dnorm(p_grid, mean = prior_mean, sd = prior_sd, log = FALSE)
+                 ) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
+                             size = df$total[df$ID == teacherInitial],
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         )
+  #Plot:
+  df <- data.frame(grid = P_grid$p_grid, posterior = P_grid$posterior, prior = P_grid$prior, likelihood = P_grid$likelihood)
+  PLOT <- ggplot(df, aes(grid, posterior))+
+    geom_point()+
+    geom_line()+
+    theme_classic()+
+    geom_line(aes(grid, prior/dens),color= 'red')+
+    xlab("Knowledge of CogSci")+
+    ylab("posterior probability")+
+    ggtitle(plotTitle)
+  # return(P_grid)
+  return(PLOT)
+  }
+
 ```
 
 
@@ -83,20 +108,7 @@ gridFunction("Riccardo", 0.8, 0.2, 3, 6)
 ```{r}
 # First implement a grid approximation (hint check paragraph 2.4.1!) with a uniform prior, calculate the posterior and plot the results:
 
-R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
-                 prior = 1 #(same as rep(1, 101)) new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
-                 ) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "R"], size = df$total[df$ID == "R"], prob = p_grid),#We don't want to just manually write Rs values.
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)
-         ) %>%
-  glimpse()
-
-# Plot
-plot(R_grid$p_grid, R_grid$posterior, type = "b",
-     xlab = "Probability of correct", ylab = "Posterior probability")
-
-# Likelihood = plausibility (in this case - generally-ish)
+flatPrior("Riccardo", "R")
 
 ```
 
@@ -127,130 +139,20 @@ curve( dnorm( x , 0.5 , 0.2 ) , lty=2 , add=TRUE )
 
 2. Estimate all the teachers' knowledge of CogSci. Who's best? Use grid approximation. Comment on the posteriors of Riccardo and Mikkel.
 2a. Produce plots of the prior, and posterior for each teacher.
-```{r Kristian}
-K_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
-                 prior = 1 #(same as rep(1, 101)) new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
-                 ) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "K"], size = df$total[df$ID == "K"], prob = p_grid),#We don't want to just manually write Rs values.
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)
-         ) %>%
-  glimpse()
-
-
-
-
-
-
-D_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
-                 prior = 1 #(same as rep(1, 101)) new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
-                 ) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "D"], size = df$total[df$ID == "D"], prob = p_grid),#We don't want to just manually write Rs values.
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)
-         ) %>%
-  glimpse()
-
-
-
-
-
-M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
-                 prior = 1 #(same as rep(1, 101)) new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
-                 ) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "M"], size = df$total[df$ID == "M"], prob = p_grid),#We don't want to just manually write Rs values.
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)
-         ) %>%
-  glimpse()
-
-
-
-# Plots
-plot(K_grid$p_grid, K_grid$posterior, type = "b",
-     xlab = "Probability of correct", ylab = "Posterior probability")
-plot(D_grid$p_grid, D_grid$posterior, type = "b",
-     xlab = "Probability of correct", ylab = "Posterior probability")
-plot(M_grid$p_grid, M_grid$posterior, type = "b",
-     xlab = "Probability of correct", ylab = "Posterior probability")
-```
 
 ```{r Manon plots}
 #Kristian
-K_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "K"], #also = 2
-                             size = df$total[df$ID == "K"], #also= 2
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Kdf <- data.frame(grid = K_grid$p_grid, posterior = K_grid$posterior, prior = K_grid$prior, likelihood = K_grid$likelihood)
-
-KT <- ggplot(Kdf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Kristian")
-
-
-
-#Daina
-D_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "D"], #also = 160
-                             size = df$total[df$ID == "D"], #also= 198
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Ddf <- data.frame(grid = D_grid$p_grid, posterior = D_grid$posterior, prior = D_grid$prior, likelihood = D_grid$likelihood)
-
-DC <- ggplot(Ddf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Daina")
-
-#Mikkel
-M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "M"], #also = 66
-                             size = df$total[df$ID == "M"], #also= 132
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Mdf <- data.frame(grid = M_grid$p_grid, posterior = M_grid$posterior, prior = M_grid$prior, likelihood = M_grid$likelihood)
-
-MW <- ggplot(Mdf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Mikkel")
+flatPrior("Kristian", "K")
 
 # Plotting all teachers in one plot
 # http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
-ggpubr::ggarrange(RF, KT, DC, MW, 
+ggpubr::ggarrange(flatPrior("Riccardo", "R"), 
+                  flatPrior("Kristian", "K"), 
+                  flatPrior("Daina", "D"), 
+                  flatPrior("Mikkel", "M"), 
                   #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
                   ncol = 2, nrow = 2)
 
-RF
-KT
-DC
-MW
 ```
 
 
@@ -261,77 +163,13 @@ MW
 
 
 ```{r}
-#Kristian
-K_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "K"], #also = 2
-                             size = df$total[df$ID == "K"], #also= 2
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
 
-Kdf <- data.frame(grid = K_grid$p_grid, posterior = K_grid$posterior, prior = K_grid$prior, likelihood = K_grid$likelihood)
-
-KT <- ggplot(Kdf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Kristian")
-
-
-
-#Daina
-D_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "D"], #also = 160
-                             size = df$total[df$ID == "D"], #also= 198
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Ddf <- data.frame(grid = D_grid$p_grid, posterior = D_grid$posterior, prior = D_grid$prior, likelihood = D_grid$likelihood)
-
-DC <- ggplot(Ddf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Daina")
-
-#Mikkel
-M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "M"], #also = 66
-                             size = df$total[df$ID == "M"], #also= 132
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Mdf <- data.frame(grid = M_grid$p_grid, posterior = M_grid$posterior, prior = M_grid$prior, likelihood = M_grid$likelihood)
-
-MW <- ggplot(Mdf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Mikkel")
-
-# Plotting all teachers in one plot
-# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
-ggpubr::ggarrange(RF, KT, DC, MW, 
+ggpubr::ggarrange(gridFunction("Riccardo", 0.8, 0.2, "R"), 
+                  gridFunction("Kristian", 0.8, 0.2, "K"), 
+                  gridFunction("Diana", 0.8, 0.2, "D"), 
+                  gridFunction("Mikkel", 0.8, 0.2, "M"), 
                   #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
                   ncol = 2, nrow = 2)
-
 ```
 
 

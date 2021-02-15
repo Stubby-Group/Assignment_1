@@ -1,0 +1,22 @@
+---
+title: "Untitled"
+author: "Lærke Brædder"
+date: "2/15/2021"
+output: html_document
+---
+```{r}
+R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
+                 prior = 1 #(same as rep(1, 101)) new column with 100 rows (all 1). Flat prior: Equally likely that he knows everything as nothing. All values between 1 and 0 are equally likely.
+                 ) %>%
+  mutate(likelihood = dbinom(df$correct[df$ID == "R"], size = df$total[df$ID == "R"], prob = p_grid),#We don't want to just manually write Rs values.
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         ) %>%
+  glimpse()
+
+# Plot
+plot(R_grid$p_grid, R_grid$posterior, type = "b",
+     xlab = "Probability of correct", ylab = "Posterior probability")
+
+# Likelihood = plausibility (in this case - generally-ish)
+```
