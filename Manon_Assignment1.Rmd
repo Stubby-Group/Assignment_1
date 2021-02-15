@@ -58,7 +58,7 @@ R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
   glimpse() # what does glimpse do?
 
 # draw the plot:
-c
+d <- data.frame(grid = R_grid$p_grid, posterior = R_grid$posterior, prior = R_grid$prior, likelihood = R_grid$likelihood)
 
 RF <- ggplot(d, aes(grid, posterior))+
   geom_point()+
@@ -68,6 +68,8 @@ RF <- ggplot(d, aes(grid, posterior))+
   xlab("Knowledge of CogSci")+
   ylab("posterior probability")+
   ggtitle("Riccardo")
+
+RF
 ```
 
 ```{r Question 1.2- implement a quadratic approximation (hint check paragraph 2.4.2!).}
@@ -168,26 +170,18 @@ MW
 ```
 
 ```{r Question 2 but the right way}
-
-```
-
-
-3. Change the prior. Given your teachers have all CogSci jobs, you should start with a higher appreciation of their knowledge: the prior is a normal distribution with a mean of 0.8 and a standard deviation of 0.2. Do the results change (and if so how)?
-3a. Produce plots of the prior and posterior for each teacher.
-
-```{r}
-customPrior <- function(priorMean, priorSD, teacherInitial, plotTitle){
+flatPrior <- function(teacherInitial, plotTitle){
   dens <- 100
-  YAS_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = dnorm(x = 0, mean = priorMean, sd = priorSD)) %>%
+  P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = 1) %>%
     mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
                              size = df$total[df$ID == teacherInitial],
                              prob = p_grid),
          unstd.posterior = likelihood * prior,
          posterior = unstd.posterior / sum(unstd.posterior)
-         ) %>%
+         )
     
-    d <- data.frame(grid = YAS_grid$p_grid, posterior = YAS_grid$posterior, prior = YAS_grid$prior, likelihood = YAS_grid$likelihood)
+    d <- data.frame(grid = P_grid$p_grid, posterior = P_grid$posterior, prior = P_grid$prior, likelihood = P_grid$likelihood)
   
   PLOT <- ggplot(d, aes(grid, posterior))+
   geom_point()+
@@ -201,7 +195,51 @@ customPrior <- function(priorMean, priorSD, teacherInitial, plotTitle){
   return(PLOT)
 }
 
-customPrior(0.8, 0.2, "M", "Mikkel")
+ggpubr::ggarrange(flatPrior("R", "Riccardo"),
+                  flatPrior("K", "Kristian"),
+                  flatPrior("D", "Daina"),
+                  flatPrior("M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+```
+
+
+3. Change the prior. Given your teachers have all CogSci jobs, you should start with a higher appreciation of their knowledge: the prior is a normal distribution with a mean of 0.8 and a standard deviation of 0.2. Do the results change (and if so how)?
+3a. Produce plots of the prior and posterior for each teacher.
+
+```{r}
+customPrior <- function(priorMean, priorSD, teacherInitial, plotTitle){
+  dens <- 100
+  P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = dnorm(x = p_grid, mean = priorMean, sd = priorSD)) %>%
+    mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
+                             size = df$total[df$ID == teacherInitial],
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         )
+    
+    d <- data.frame(grid = P_grid$p_grid, posterior = P_grid$posterior, prior = P_grid$prior, likelihood = P_grid$likelihood)
+  
+  PLOT <- ggplot(d, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle(plotTitle)
+  
+  return(PLOT)
+}
+
+ggpubr::ggarrange(customPrior(0.8, 0.2, "R", "Riccardo"),
+                  customPrior(0.8, 0.2, "K", "Kristian"),
+                  customPrior(0.8, 0.2, "D", "Daina"),
+                  customPrior(0.8, 0.2, "M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+
+# the results do indeed change. 
+# Firstly, Riccardo and Kristian (who didn't answer very many questions) have now gotten 'tighter' / less wide curves, which means that our model is more sure. 
 ```
 
 
