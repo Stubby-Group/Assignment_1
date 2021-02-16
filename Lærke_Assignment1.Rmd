@@ -193,6 +193,20 @@ ggpubr::ggarrange(customPrior(dfnew, "Riccardo", 0.8, 0.2, "R"),
 
 5. Imagine you're a skeptic and think your teachers do not know anything about CogSci, given the content of their classes. How would you operationalize that belief?
 
+```{r}
+## !!! Questions: (1) are they asked questions where there is a 50/50 chance they will answer correctly? (2) do we use the new (big) or the old (small) data? !!!  (3) Also, why does the function remove rows, if the sd is too small? (4) What does it mean how high the "peak" of the curve goes? (posterior probability). Does it mean that there is e.g. 0.15% probability that Riccardo knows 0.3 (in this case) about cogsci?
+
+# Using the new data
+ggpubr::ggarrange(customPrior(dfnew, "Riccardo", 0.01, 0.03, "R"), 
+                  customPrior(dfnew, "Kristian", 0.01, 0.03, "K"), 
+                  customPrior(dfnew, "Diana", 0.01, 0.03, "D"), 
+                  customPrior(dfnew, "Mikkel", 0.01, 0.03, "M"), 
+                  #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
+                  ncol = 2, nrow = 2)
+# Technically this does not assume that they know nothing, but rather that they know very little. It cannot run, if you set both mean and sd to 0 (which I otherwise assumed would mean that we were certain that they knew absolutely zero about cogsci)
+```
+
+
 6. Optional question: Can you estimate the difference between Riccardo's estimated knowledge and that of each of the other teachers? Would you deem it credible (that is, would you believe that it is actually different)? 
 
 ### Second part: Focusing on predictions
