@@ -32,9 +32,7 @@ This is the data:
 - Daina: 160 correct answers out of 198 questions (Daina never gets bored)
 - Mikkel: 66 correct answers out of 132 questions
 
-```{r}
-library(tidyverse)
-
+```{r making a tibble with the data}
 #Making a tibble with all of the data
 df <- tibble(correct = c(3, 2, 160, 66),
              ID = c("R", "K", "D", "M"),
@@ -51,12 +49,12 @@ Questions:
 
 
 ```{r}
-flatPrior <- function(plotTitle, teacherInitial){
+flatPrior <- function(data, plotTitle, teacherInitial){
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
                  prior = 1
                  ) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
-                             size = df$total[df$ID == teacherInitial],
+  mutate(likelihood = dbinom(data$correct[data$ID == teacherInitial],
+                             size = data$total[data$ID == teacherInitial],
                              prob = p_grid),
          unstd.posterior = likelihood * prior,
          posterior = unstd.posterior / sum(unstd.posterior)
@@ -76,12 +74,13 @@ flatPrior <- function(plotTitle, teacherInitial){
   }
 
 
-customPrior <- function(plotTitle, prior_mean, prior_sd, teacherInitial){
+
+customPrior <- function(data, plotTitle, prior_mean, prior_sd, teacherInitial){
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = 101),
                  prior = dnorm(p_grid, mean = prior_mean, sd = prior_sd, log = FALSE)
                  ) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == teacherInitial],
-                             size = df$total[df$ID == teacherInitial],
+  mutate(likelihood = dbinom(data$correct[data$ID == teacherInitial],
+                             size = data$total[data$ID == teacherInitial],
                              prob = p_grid),
          unstd.posterior = likelihood * prior,
          posterior = unstd.posterior / sum(unstd.posterior)
@@ -108,7 +107,7 @@ customPrior <- function(plotTitle, prior_mean, prior_sd, teacherInitial){
 ```{r}
 # First implement a grid approximation (hint check paragraph 2.4.1!) with a uniform prior, calculate the posterior and plot the results:
 
-flatPrior("Riccardo", "R")
+flatPrior(df, "Riccardo", "R")
 
 ```
 
@@ -142,14 +141,14 @@ curve( dnorm( x , 0.5 , 0.2 ) , lty=2 , add=TRUE )
 
 ```{r Manon plots}
 #Kristian
-flatPrior("Kristian", "K")
+flatPrior(df, "Kristian", "K")
 
 # Plotting all teachers in one plot
 # http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
-ggpubr::ggarrange(flatPrior("Riccardo", "R"), 
-                  flatPrior("Kristian", "K"), 
-                  flatPrior("Daina", "D"), 
-                  flatPrior("Mikkel", "M"), 
+ggpubr::ggarrange(flatPrior(df, "Riccardo", "R"), 
+                  flatPrior(df, "Kristian", "K"), 
+                  flatPrior(df, "Daina", "D"), 
+                  flatPrior(df, "Mikkel", "M"), 
                   #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
                   ncol = 2, nrow = 2)
 
@@ -164,16 +163,33 @@ ggpubr::ggarrange(flatPrior("Riccardo", "R"),
 
 ```{r}
 
-ggpubr::ggarrange(gridFunction("Riccardo", 0.8, 0.2, "R"), 
-                  gridFunction("Kristian", 0.8, 0.2, "K"), 
-                  gridFunction("Diana", 0.8, 0.2, "D"), 
-                  gridFunction("Mikkel", 0.8, 0.2, "M"), 
+ggpubr::ggarrange(customPrior(df, "Riccardo", 0.8, 0.2, "R"), 
+                  customPrior(df, "Kristian", 0.8, 0.2, "K"), 
+                  customPrior(df, "Diana", 0.8, 0.2, "D"), 
+                  customPrior(df, "Mikkel", 0.8, 0.2, "M"), 
                   #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
                   ncol = 2, nrow = 2)
 ```
 
 
 4. You go back to your teachers and collect more data (multiply the previous numbers by 100). Calculate their knowledge with both a uniform prior and a normal prior with a mean of 0.8 and a standard deviation of 0.2. Do you still see a difference between the results? Why?
+
+```{r}
+# Making a tibble with the new data:
+dfnew <- df %>% mutate(
+  correct = correct*100,
+  total = total*100
+)
+
+# Repeating the same process from task 3.a with the new data:
+ggpubr::ggarrange(customPrior(dfnew, "Riccardo", 0.8, 0.2, "R"), 
+                  customPrior(dfnew, "Kristian", 0.8, 0.2, "K"), 
+                  customPrior(dfnew, "Diana", 0.8, 0.2, "D"), 
+                  customPrior(dfnew, "Mikkel", 0.8, 0.2, "M"), 
+                  #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
+                  ncol = 2, nrow = 2)
+```
+
 
 5. Imagine you're a skeptic and think your teachers do not know anything about CogSci, given the content of their classes. How would you operationalize that belief?
 
