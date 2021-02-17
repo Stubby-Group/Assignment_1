@@ -281,6 +281,18 @@ ggpubr::ggarrange(customPrior(dfnew, 0.8, 0.2, "R", "Riccardo"),
 ```{r}
 # what is meant by 'operationalize' here? are we supposed to test for it? like a hypothesis?
 # or does it just mean that we set a prior where 50/50 is the most likely, because we don't think they have negative knowledge
+
+# Okay, i will use the old data (given that the new set is 'too certain') 
+# and set the priorMean to 0.5 (no knowledge, random guesses)
+# perhaps with a small priorSD because we believe them all to be equally ignorant
+
+ggpubr::ggarrange(customPrior(df, 0.5, 0.1, "R", "Riccardo"),
+                  customPrior(df, 0.5, 0.1, "K", "Kristian"),
+                  customPrior(df, 0.5, 0.1, "D", "Daina"),
+                  customPrior(df, 0.5, 0.1, "M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+
+# Even Kristian Tylén is now estimated to barely know anything!
 ```
 
 
