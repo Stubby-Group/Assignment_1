@@ -336,3 +336,68 @@ Guidance Tips
 3. Are the parameter estimates changing? (way 1)
 4. How does the new data look in last year's predictive posterior? (way 2)
 
+```{r}
+# load data
+dfReassessment <- tibble(correct = c(9, 8, 148, 34),
+                         ID = c("R", "K", "D", "M"),
+                         total = c(10, 12, 172, 65))
+
+# reassesment data with flat priors:
+ggpubr::ggarrange(flatPrior(dfReassessment, "R", "Riccardo"),
+                  flatPrior(dfReassessment, "K", "Kristian"),
+                  flatPrior(dfReassessment, "D", "Daina"),
+                  flatPrior(dfReassessment, "M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+
+# reassessment data with the previous year's posteriors as priors: (run the function chunk below first)
+ggpubr::ggarrange(oldPosteriorNewPrior(df, 0.8, 0.2, dfReassessment, "R", "Riccardo"),
+                  oldPosteriorNewPrior(df, 0.8, 0.2, dfReassessment, "K", "Kristian"),
+                  oldPosteriorNewPrior(df, 0.8, 0.2, dfReassessment, "D", "Daina"),
+                  oldPosteriorNewPrior(df, 0.8, 0.2, dfReassessment, "M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+```
+```{r Making the old posteriors into the new priors}
+oldPosteriorNewPrior <- function(old_df, oldPriorMean, oldPriorSD, new_df, teacherInitial, plotTitle){
+  # start by calculating the prior, likelihood, and posterior of last year's teacher assessment
+  dens <- 100
+  P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = dnorm(x = p_grid, mean = oldPriorMean, sd = oldPriorSD)) %>%
+    mutate(likelihood = dbinom(old_df$correct[old_df$ID == teacherInitial],
+                             size = old_df$total[old_df$ID == teacherInitial],
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         )
+    
+  d <- data.frame(grid = P_grid$p_grid, posterior = P_grid$posterior, prior = P_grid$prior, likelihood = P_grid$likelihood)
+  # we will use the previous year's d$posterior to become the new year's prior 
+  # "prior = d$posterior" gives the precise posterior/new prior, 
+  # while "prior= dnorm(… mean = mean(d$posterior))" is not precise, but approximate
+  
+  # now we move to the new stuff!
+  P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
+                 prior = d$posterior) %>%
+    mutate(likelihood = dbinom(new_df$correct[new_df$ID == teacherInitial],
+                             size = new_df$total[new_df$ID == teacherInitial],
+                             prob = p_grid),
+         unstd.posterior = likelihood * prior,
+         posterior = unstd.posterior / sum(unstd.posterior)
+         )
+    
+  d <- data.frame(grid = P_grid$p_grid, posterior = P_grid$posterior, prior = P_grid$prior, likelihood = P_grid$likelihood)
+  
+  
+  PLOT <- ggplot(d, aes(grid, posterior))+
+  geom_point()+
+  geom_line()+
+  theme_classic()+
+  geom_line(aes(grid, prior/dens),color= 'red')+
+  xlab("Knowledge of CogSci")+
+  ylab("posterior probability")+
+  ggtitle(plotTitle)
+  
+  return(PLOT)
+}
+
+```
+
