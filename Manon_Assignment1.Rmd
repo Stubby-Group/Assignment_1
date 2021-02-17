@@ -293,6 +293,7 @@ ggpubr::ggarrange(customPrior(df, 0.5, 0.1, "R", "Riccardo"),
                   ncol = 2, nrow = 2)
 
 # Even Kristian Tylén is now estimated to barely know anything!
+# but those who answered more total questions weren't changed much by this new prior.
 ```
 
 
