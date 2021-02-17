@@ -170,7 +170,7 @@ MW
 ```
 
 ```{r Question 2 but the right way}
-flatPrior <- function(teacherInitial, plotTitle){
+flatPrior <- function(df, teacherInitial, plotTitle){
   dens <- 100
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
                  prior = 1) %>%
@@ -195,10 +195,10 @@ flatPrior <- function(teacherInitial, plotTitle){
   return(PLOT)
 }
 
-ggpubr::ggarrange(flatPrior("R", "Riccardo"),
-                  flatPrior("K", "Kristian"),
-                  flatPrior("D", "Daina"),
-                  flatPrior("M", "Mikkel"), 
+ggpubr::ggarrange(flatPrior(df, "R", "Riccardo"),
+                  flatPrior(df, "K", "Kristian"),
+                  flatPrior(df, "D", "Daina"),
+                  flatPrior(df, "M", "Mikkel"), 
                   ncol = 2, nrow = 2)
 ```
 
@@ -207,7 +207,7 @@ ggpubr::ggarrange(flatPrior("R", "Riccardo"),
 3a. Produce plots of the prior and posterior for each teacher.
 
 ```{r}
-customPrior <- function(priorMean, priorSD, teacherInitial, plotTitle){
+customPrior <- function(df, priorMean, priorSD, teacherInitial, plotTitle){
   dens <- 100
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
                  prior = dnorm(x = p_grid, mean = priorMean, sd = priorSD)) %>%
@@ -232,10 +232,10 @@ customPrior <- function(priorMean, priorSD, teacherInitial, plotTitle){
   return(PLOT)
 }
 
-ggpubr::ggarrange(customPrior(0.8, 0.2, "R", "Riccardo"),
-                  customPrior(0.8, 0.2, "K", "Kristian"),
-                  customPrior(0.8, 0.2, "D", "Daina"),
-                  customPrior(0.8, 0.2, "M", "Mikkel"), 
+ggpubr::ggarrange(customPrior(df, 0.8, 0.2, "R", "Riccardo"),
+                  customPrior(df, 0.8, 0.2, "K", "Kristian"),
+                  customPrior(df, 0.8, 0.2, "D", "Daina"),
+                  customPrior(df, 0.8, 0.2, "M", "Mikkel"), 
                   ncol = 2, nrow = 2)
 
 # the results do indeed change. 
@@ -244,10 +244,51 @@ ggpubr::ggarrange(customPrior(0.8, 0.2, "R", "Riccardo"),
 
 
 4. You go back to your teachers and collect more data (multiply the previous numbers by 100). Calculate their knowledge with both a uniform prior and a normal prior with a mean of 0.8 and a standard deviation of 0.2. Do you still see a difference between the results? Why?
+```{r}
+# in order to make the flatPrior() and customPrior() functions work with any dataset, can't we just put df as an argument?
+
+# an by 'multiply the previous numbers by 100' is it meant that what was 66 correct out of 132 for MW will now be 660/1320?
+  # my guess then, is that the posterior distributions will look the same with the flat prior, 
+  # ... and with the custom prior, the prior will just have a smaller influence than before
+
+# Making a tibble with the new data: (stolen form Lærke)
+dfnew <- df %>% mutate(
+  correct = correct*100,
+  total = total*100
+)
+
+# flat prior
+ggpubr::ggarrange(flatPrior(dfnew, "R", "Riccardo"),
+                  flatPrior(dfnew, "K", "Kristian"),
+                  flatPrior(dfnew, "D", "Daina"),
+                  flatPrior(dfnew, "M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+
+# 'normal prior'
+ggpubr::ggarrange(customPrior(dfnew, 0.8, 0.2, "R", "Riccardo"),
+                  customPrior(dfnew, 0.8, 0.2, "K", "Kristian"),
+                  customPrior(dfnew, 0.8, 0.2, "D", "Daina"),
+                  customPrior(dfnew, 0.8, 0.2, "M", "Mikkel"), 
+                  ncol = 2, nrow = 2)
+
+# Whooooa I was totally wrong in my predictions. The distributions do not look the same in either plot.
+# The certainty of each teacher's knowledge is so great that there barely is a distribution
+# the prior distribution is barely visibly different from flat to 'normal', so in that sense I was right that it didn't do much
+```
+
 
 5. Imagine you're a skeptic and think your teachers do not know anything about CogSci, given the content of their classes. How would you operationalize that belief?
+```{r}
+# what is meant by 'operationalize' here? are we supposed to test for it? like a hypothesis?
+# or does it just mean that we set a prior where 50/50 is the most likely, because we don't think they have negative knowledge
+```
+
 
 6. Optional question: Can you estimate the difference between Riccardo's estimated knowledge and that of each of the other teachers? Would you deem it credible (that is, would you believe that it is actually different)? 
+```{r}
+# how do we compare two posterior distributions to each other? and how is credibility judged?
+```
+
 
 ### Second part: Focusing on predictions
 
