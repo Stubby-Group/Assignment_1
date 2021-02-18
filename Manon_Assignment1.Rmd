@@ -39,7 +39,6 @@ Questions:
 # loading stuff
 library(tidyverse)
 library(rethinking)
-library(brms)
 
 df <- tibble(correct = c(3, 2, 160, 66),
              ID = c("R", "K", "D", "M"),
@@ -56,7 +55,7 @@ R_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens),
          unstd.posterior = likelihood * prior,
          posterior = unstd.posterior / sum(unstd.posterior)
          ) %>%
-  glimpse() # what does glimpse do?
+  glimpse()
 
 # draw the plot:
 d <- data.frame(grid = R_grid$p_grid, posterior = R_grid$posterior, prior = R_grid$prior, likelihood = R_grid$likelihood)
@@ -91,86 +90,6 @@ precis(globe.qa)
 2a. Produce plots of the prior, and posterior for each teacher.
 
 ```{r Question 2}
-#Kristian
-K_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "K"], #also = 2
-                             size = df$total[df$ID == "K"], #also= 2
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Kdf <- data.frame(grid = K_grid$p_grid, posterior = K_grid$posterior, prior = K_grid$prior, likelihood = K_grid$likelihood)
-
-KT <- ggplot(Kdf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Kristian")
-
-
-
-#Daina
-D_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "D"], #also = 160
-                             size = df$total[df$ID == "D"], #also= 198
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Ddf <- data.frame(grid = D_grid$p_grid, posterior = D_grid$posterior, prior = D_grid$prior, likelihood = D_grid$likelihood)
-
-DC <- ggplot(Ddf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Daina")
-
-#Mikkel
-M_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
-                 prior = 1) %>%
-  mutate(likelihood = dbinom(df$correct[df$ID == "M"], #also = 66
-                             size = df$total[df$ID == "M"], #also= 132
-                             prob = p_grid),
-         unstd.posterior = likelihood * prior,
-         posterior = unstd.posterior / sum(unstd.posterior)) %>%
-  glimpse()
-
-Mdf <- data.frame(grid = M_grid$p_grid, posterior = M_grid$posterior, prior = M_grid$prior, likelihood = M_grid$likelihood)
-
-MW <- ggplot(Mdf, aes(grid, posterior))+
-  geom_point()+
-  geom_line()+
-  theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
-  ylab("posterior probability")+
-  ggtitle("Mikkel")
-
-# Plotting all teachers in one plot
-# http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/81-ggplot2-easy-way-to-mix-multiple-graphs-on-the-same-page/
-ggpubr::ggarrange(RF, KT, DC, MW, 
-                  #labels = c("Riccardo", "Kristian", "Daina", "Mikkel"),
-                  ncol = 2, nrow = 2)
-
-RF
-KT
-DC
-MW
-
-# Comment: Both Riccardo and Mikkel have most probibly a roughly fifty-fifty knowledge of cogsci
-```
-
-```{r Question 2 but the right way}
 flatPrior <- function(df, teacherInitial, plotTitle){
   dens <- 100
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
@@ -193,12 +112,6 @@ flatPrior <- function(df, teacherInitial, plotTitle){
   ylab("posterior probability")+
   ggtitle(plotTitle)
   
-  print(paste(plotTitle, 
-              "'s mean is:",
-              mean(P_grid$punstd.posterior),
-              "and the sd is:",
-              sd(P_grid$unstd.posterior)))
-  
   return(PLOT)
 }
 
@@ -213,7 +126,7 @@ ggpubr::ggarrange(flatPrior(df, "R", "Riccardo"),
 3. Change the prior. Given your teachers have all CogSci jobs, you should start with a higher appreciation of their knowledge: the prior is a normal distribution with a mean of 0.8 and a standard deviation of 0.2. Do the results change (and if so how)?
 3a. Produce plots of the prior and posterior for each teacher.
 
-```{r}
+```{r Question 3}
 customPrior <- function(df, priorMean, priorSD, teacherInitial, plotTitle){
   dens <- 100
   P_grid <- tibble(p_grid = seq(from = 0, to = 1, length.out = dens), 
@@ -236,12 +149,6 @@ customPrior <- function(df, priorMean, priorSD, teacherInitial, plotTitle){
   ylab("posterior probability")+
   ggtitle(plotTitle)
   
-  print(paste(plotTitle, 
-              "'s mean is:",
-              mean(P_grid$unstd.posterior),
-              "and the sd is:",
-              sd(P_grid$unstd.posterior)))
-  
   return(PLOT)
 }
 
@@ -257,7 +164,7 @@ ggpubr::ggarrange(customPrior(df, 0.8, 0.2, "R", "Riccardo"),
 
 
 4. You go back to your teachers and collect more data (multiply the previous numbers by 100). Calculate their knowledge with both a uniform prior and a normal prior with a mean of 0.8 and a standard deviation of 0.2. Do you still see a difference between the results? Why?
-```{r}
+```{r Question 4}
 # in order to make the flatPrior() and customPrior() functions work with any dataset, can't we just put df as an argument?
 
 # an by 'multiply the previous numbers by 100' is it meant that what was 66 correct out of 132 for MW will now be 660/1320?
@@ -291,7 +198,7 @@ ggpubr::ggarrange(customPrior(dfnew, 0.8, 0.2, "R", "Riccardo"),
 
 
 5. Imagine you're a skeptic and think your teachers do not know anything about CogSci, given the content of their classes. How would you operationalize that belief?
-```{r}
+```{r Question 5}
 # what is meant by 'operationalize' here? are we supposed to test for it? like a hypothesis?
 # or does it just mean that we set a prior where 50/50 is the most likely, because we don't think they have negative knowledge
 
@@ -299,10 +206,10 @@ ggpubr::ggarrange(customPrior(dfnew, 0.8, 0.2, "R", "Riccardo"),
 # and set the priorMean to 0.5 (no knowledge, random guesses)
 # perhaps with a small priorSD because we believe them all to be equally ignorant
 
-ggpubr::ggarrange(customPrior(df, 0.5, 0.1, "R", "Riccardo"),
-                  customPrior(df, 0.5, 0.1, "K", "Kristian"),
-                  customPrior(df, 0.5, 0.1, "D", "Daina"),
-                  customPrior(df, 0.5, 0.1, "M", "Mikkel"), 
+ggpubr::ggarrange(customPrior(df, 0.5, 0.05, "R", "Riccardo"),
+                  customPrior(df, 0.5, 0.05, "K", "Kristian"),
+                  customPrior(df, 0.5, 0.05, "D", "Daina"),
+                  customPrior(df, 0.5, 0.05, "M", "Mikkel"), 
                   ncol = 2, nrow = 2)
 
 
@@ -414,22 +321,24 @@ oldPosteriorNewPrior <- function(old_df, oldPriorMean, oldPriorSD, new_df, teach
 
 ```
 
-```{r quadratic approximation Revisited}
-# (R code 2.6 from statistical rethinking)    Trying with only Daina's data from the new year
+
+
+
+
+
+
+```{r numbers}
+# This code was used for calculating the means and standard deviations for the report:
+
+
+# (R code 2.6 from statistical rethinking)
 cogsciknowledge.qa <- quap(
   alist(
-    C ~ dbinom(C + I, p), # binomial likelihood
-    p ~ dnorm(mean = 0.8, sd = 0.2) # custom priors
-), data=list(C = 148, I = 24))
+    correct ~ dbinom(correct + incorrect, p), # binomial likelihood
+    #p ~ dnorm(mean = 0.8, sd = 0.2) # custom priors
+    p ~ dunif(0,1)
+), data=list(correct = dfnew$correct[df$ID == "D"], incorrect = dfnew$total[df$ID == "D"]-dfnew$correct[df$ID == "D"]))
 # display summary of quadratic approximation
-precis(cogsciknowledge.qa)
-
-# (R code 2.7 from statistical rethinking)
-# analytical calculation
-C <-  148
-I <-  24
-curve(dbeta(x, C+1, I+1), from=0, to=1)
-# quadratic approximation
-curve(dnorm(x, 0.86, 0.03), lty=2, add=TRUE) #this is the dotted line
+precis(cogsciknowledge.qa, digits = 5)
 ```
 
