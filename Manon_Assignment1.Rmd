@@ -39,6 +39,7 @@ Questions:
 # loading stuff
 library(tidyverse)
 library(rethinking)
+library(brms)
 
 df <- tibble(correct = c(3, 2, 160, 66),
              ID = c("R", "K", "D", "M"),
@@ -356,7 +357,7 @@ ggpubr::ggarrange(oldPosteriorNewPrior(df, 0.8, 0.2, dfReassessment, "R", "Ricca
                   oldPosteriorNewPrior(df, 0.8, 0.2, dfReassessment, "M", "Mikkel"), 
                   ncol = 2, nrow = 2)
 ```
-```{r Making the old posteriors into the new priors}
+```{r Making the old posteriors into the new priors - function}
 oldPosteriorNewPrior <- function(old_df, oldPriorMean, oldPriorSD, new_df, teacherInitial, plotTitle){
   # start by calculating the prior, likelihood, and posterior of last year's teacher assessment
   dens <- 100
@@ -391,13 +392,32 @@ oldPosteriorNewPrior <- function(old_df, oldPriorMean, oldPriorSD, new_df, teach
   geom_point()+
   geom_line()+
   theme_classic()+
-  geom_line(aes(grid, prior/dens),color= 'red')+
-  xlab("Knowledge of CogSci")+
+  geom_line(aes(grid, d$prior),color= 'red')+  # WE DON'T WANT TO DEVIDE THE PRIOR WITH DENS BECAUSE IT ALREADY SUMS TO 1
+  xlab("Knowledge of CogSci")+                 # BECAUSE IT IS A RECYCLED POSTERIOR
   ylab("posterior probability")+
   ggtitle(plotTitle)
   
   return(PLOT)
 }
 
+```
+
+```{r quadratic approximation Revisited}
+# (R code 2.6 from statistical rethinking)    Trying with only Daina's data from the new year
+cogsciknowledge.qa <- quap(
+  alist(
+    C ~ dbinom(C + I, p), # binomial likelihood
+    p ~ dnorm(mean = 0.8, sd = 0.2) # custom priors
+), data=list(C = 148, I = 24))
+# display summary of quadratic approximation
+precis(cogsciknowledge.qa)
+
+# (R code 2.7 from statistical rethinking)
+# analytical calculation
+C <-  148
+I <-  24
+curve(dbeta(x, C+1, I+1), from=0, to=1)
+# quadratic approximation
+curve(dnorm(x, 0.86, 0.03), lty=2, add=TRUE) #this is the dotted line
 ```
 
