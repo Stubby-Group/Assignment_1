@@ -193,6 +193,12 @@ flatPrior <- function(df, teacherInitial, plotTitle){
   ylab("posterior probability")+
   ggtitle(plotTitle)
   
+  print(paste(plotTitle, 
+              "'s mean is:",
+              mean(P_grid$punstd.posterior),
+              "and the sd is:",
+              sd(P_grid$unstd.posterior)))
+  
   return(PLOT)
 }
 
@@ -229,6 +235,12 @@ customPrior <- function(df, priorMean, priorSD, teacherInitial, plotTitle){
   xlab("Knowledge of CogSci")+
   ylab("posterior probability")+
   ggtitle(plotTitle)
+  
+  print(paste(plotTitle, 
+              "'s mean is:",
+              mean(P_grid$unstd.posterior),
+              "and the sd is:",
+              sd(P_grid$unstd.posterior)))
   
   return(PLOT)
 }
